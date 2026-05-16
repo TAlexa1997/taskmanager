@@ -21,15 +21,15 @@ jobs:
     - name: .env fájl másolása
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
-    - name: Backend függőségek telepítése (Composer)
+    - name: Backend függőségek telepítése
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
     - name: Node.js beállítása
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '24'
 
-    - name: Frontend függőségek telepítése és fordítása (Vite)
+    - name: Frontend függőségek telepítése és fordítása
       run: |
         npm install
         npm run build
@@ -37,12 +37,12 @@ jobs:
     - name: Laravel App Key generálása
       run: php artisan key:generate
 
-    - name: Teszt adatbázis beállítása (SQLite memóriában)
+    - name: Teszt adatbázis beállítása
       run: |
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=:memory:" >> .env
 
-    - name: Automatizált tesztek futtatása (PHPUnit)
+    - name: Automatizált tesztek futtatása
       run: php artisan test
 
   deploy:
