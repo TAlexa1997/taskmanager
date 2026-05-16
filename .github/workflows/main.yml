@@ -4,6 +4,9 @@ on:
   push:
     branches: [ "main" ]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -32,6 +35,7 @@ jobs:
     - name: Frontend függőségek telepítése és fordítása
       run: |
         npm install
+        chmod -R +x node_modules/.bin/
         npm run build
 
     - name: Laravel App Key generálása
