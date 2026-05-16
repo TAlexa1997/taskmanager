@@ -1,0 +1,1 @@
+{"version":2,"defects":[],"times":{"Tests\\Unit\\ExampleTest::test_that_true_is_true":0.003,"Tests\\Feature\\ExampleTest::test_the_application_returns_a_successful_response":0.133,"Tests\\Feature\\Http\\Controllers\\TaskControllerTest::test_example":0.002,"Tests\\Feature\\TaskTest::test_can_get_all_tasks":0.029,"Tests\\Feature\\TaskTest::test_can_create_a_task":0.011}}
