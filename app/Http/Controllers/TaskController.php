@@ -7,43 +7,29 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index()
     {
-        //
+        $tasks = Task::all();
+        
+        return response()->json($tasks, 200); 
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
-    }
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'in:pending,in_progress,completed',
+            'due_date' => 'nullable|date',
+            'user_id' => 'required|exists:users,id' 
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Task $task)
-    {
-        //
-    }
+        $task = Task::create($validatedData);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Task $task)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Task $task)
-    {
-        //
+        return response()->json([
+            'message' => 'Feladat sikeresen létrehozva!',
+            'data' => $task
+        ], 201); 
     }
 }
