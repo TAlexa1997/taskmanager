@@ -18,6 +18,7 @@ public function up(): void
             $table->text('description')->nullable();
             $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending');
             $table->timestamp('due_date')->nullable(); 
+            $table->longText('image')->nullable();
             $table->timestamps(); 
         });
     }

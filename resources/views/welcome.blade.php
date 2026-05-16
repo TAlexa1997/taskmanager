@@ -25,8 +25,24 @@
                     <label class="block text-sm font-medium text-slate-700 mb-1">Leírás</label>
                     <textarea id="description" rows="3" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                 </div>
+                
+                <div class="border border-dashed border-slate-300 p-4 rounded-lg bg-slate-50 text-center">
+                    <p class="text-sm font-medium text-slate-700 mb-2">Melléklet (Opcionális)</p>
+                    
+                    <video id="cameraVideo" autoplay class="hidden w-full rounded-lg mb-2 shadow-sm"></video>
+                    <img id="photoPreview" class="hidden w-full rounded-lg mb-2 shadow-sm border" />
+                    <canvas id="cameraCanvas" class="hidden"></canvas>
+
+                    <button type="button" id="startCameraBtn" class="w-full bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition">
+                        Kamera indítása
+                    </button>
+                    <button type="button" id="captureBtn" class="hidden w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition mt-2">
+                        Fotó elkészítése!
+                    </button>
+                </div>
+
                 <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
-                    Hozzáadás
+                    Feladat Hozzáadása
                 </button>
             </form>
         </section>
@@ -39,6 +55,42 @@
     <script>
         const API_URL = '/api/tasks';
         const CURRENT_USER_ID = 1; 
+        let capturedImageBase64 = null;
+        let videoStream = null;
+        const video = document.getElementById('cameraVideo');
+        const canvas = document.getElementById('cameraCanvas');
+        const photoPreview = document.getElementById('photoPreview');
+        const startCameraBtn = document.getElementById('startCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = videoStream;
+                video.classList.remove('hidden');
+                captureBtn.classList.remove('hidden');
+                startCameraBtn.classList.add('hidden');
+                photoPreview.classList.add('hidden');
+                capturedImageBase64 = null;
+            } catch (err) {
+                alert('Hiba: Nem sikerült hozzáférni a kamerához. Engedélyezd a böngészőben!');
+                console.error(err);
+            }
+        });
+
+        captureBtn.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            capturedImageBase64 = canvas.toDataURL('image/jpeg');
+            videoStream.getTracks().forEach(track => track.stop());
+            video.classList.add('hidden');
+            captureBtn.classList.add('hidden');
+            startCameraBtn.classList.remove('hidden');
+            startCameraBtn.innerText = "Új fotó készítése";
+            photoPreview.src = capturedImageBase64;
+            photoPreview.classList.remove('hidden');
+        });
 
         async function fetchTasks() {
             try {
@@ -62,14 +114,16 @@
             tasks.forEach(task => {
                 const statusColor = task.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800';
                 const statusText = task.status === 'completed' ? 'Kész' : 'Folyamatban';
+                const imageHtml = task.image ? `<img src="${task.image}" class="mt-3 rounded-lg max-h-48 object-cover border shadow-sm">` : '';
 
                 list.innerHTML += `
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition">
-                        <div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start gap-4 hover:shadow-md transition">
+                        <div class="w-full">
                             <h3 class="font-bold text-lg text-slate-900">${task.title}</h3>
                             <p class="text-sm text-slate-600 mt-1">${task.description || 'Nincs részletes leírás.'}</p>
+                            ${imageHtml}
                         </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${statusColor}">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap ${statusColor}">
                             ${statusText}
                         </span>
                     </div>
@@ -94,12 +148,16 @@
                         title: title, 
                         description: description, 
                         status: 'pending', 
-                        user_id: CURRENT_USER_ID 
+                        user_id: CURRENT_USER_ID,
+                        image: capturedImageBase64 
                     })
                 });
 
                 if (response.ok) {
                     document.getElementById('taskForm').reset(); 
+                    photoPreview.classList.add('hidden');
+                    capturedImageBase64 = null;
+                    startCameraBtn.innerText = "📷 Kamera indítása";
                     fetchTasks(); 
                 } else {
                     const errorData = await response.json();

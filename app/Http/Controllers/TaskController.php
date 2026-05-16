@@ -22,7 +22,8 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'status' => 'in:pending,in_progress,completed',
             'due_date' => 'nullable|date',
-            'user_id' => 'required|exists:users,id' 
+            'user_id' => 'required|exists:users,id' ,
+            'image' => 'nullable|string'
         ]);
 
         $task = Task::create($validatedData);
